@@ -420,23 +420,36 @@
   }
 
   @media (max-width: 1000px) {
-  .layout { grid-template-columns: 1fr; }
-  .left-col, .right-col, .bottom-left { grid-column: 1; grid-row: auto; margin: 0 0 1rem; }
-  .result-panel { position: static; }
-}
+    .layout {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+    }
+    .left-col   { grid-column: 1; grid-row: 1; margin-right: 0; }
+    .bottom-left{ grid-column: 1; grid-row: 2; margin-right: 0; margin-top: 1rem; }
+    .right-col  { grid-column: 1; grid-row: 3; margin-top: 1rem; }
+    .result-panel {
+      position: static;
+      top: auto;
+    }
+  }
 
-@media (max-width: 600px) {
-  header { padding: 1.25rem 1rem; }
-  header h1 { font-size: 1.4rem; }
-  .layout { padding: 1rem; }
-  .prices-grid { grid-template-columns: 1fr; }
-  .mat-input { width: 55px; }
-}
+  @media (max-width: 600px) {
+    header { padding: 1.25rem 1rem; }
+    header h1 { font-size: 1.4rem; }
+    .layout { padding: 1rem; }
+    .prices-grid { grid-template-columns: 1fr; }
+    .mat-input { width: 55px; }
+    .result-panel { padding: 1.25rem; }
+    .result-total .amount { font-size: 2rem; }
+  }
 
-@media (max-width: 400px) {
-  .materials-table thead { display: none; }
-  .materials-table td { display: block; width: 100%; }
-}
+  @media (max-width: 400px) {
+    .materials-table thead { display: none; }
+    .materials-table td { display: block; width: 100%; text-align: left; padding: 4px 0; }
+    .mat-input { width: 100%; }
+    .mat-subtotal { text-align: left; font-size: 0.82rem; color: var(--text-light); }
+    .mat-subtotal::before { content: 'Subtotal: '; }
+  }
 </style>
 </head>
 <body>
