@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presupuesto Velas</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #FAF6EF;
+    --cream-dark: #F0E9DC;
+    --warm-brown: #7C5C3E;
+    --brown-light: #A67C58;
+    --text-dark: #2C1F14;
+    --text-mid: #6B5040;
+    --text-light: #A08060;
+    --accent: #C8873A;
+    --accent-light: #F0D5B0;
+    --success: #5A8A5A;
+    --danger: #C05050;
+    --border: rgba(124, 92, 62, 0.18);
+    --border-strong: rgba(124, 92, 62, 0.35);
+    --shadow: 0 2px 12px rgba(44, 31, 20, 0.08);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text-dark);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  header {
+    background: var(--text-dark);
+    padding: 2rem 2.5rem 1.5rem;
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+  }
+
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: var(--accent-light);
+    line-height: 1.1;
+  }
+
+  header p {
+    font-size: 0.85rem;
+    color: var(--brown-light);
+    margin-top: 4px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+  }
+
+  .flame-icon {
+    font-size: 2.2rem;
+    line-height: 1;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 0;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  .panel {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+  }
+
+  .panel + .panel { margin-top: 1rem; }
+
+  .panel-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    color: var(--warm-brown);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-title span.icon {
+    font-size: 1.1rem;
+  }
+
+  .left-col { grid-column: 1; grid-row: 1; margin-right: 1rem; }
+  .right-col { grid-column: 2; grid-row: 1 / 3; }
+  .bottom-left { grid-column: 1; grid-row: 2; margin-right: 1rem; margin-top: 1rem; }
+
+  /* COSTOS FIJOS */
+  .fixed-item {
+    display: grid;
+    grid-template-columns: 24px 1fr auto auto;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .fixed-item:last-child { border-bottom: none; }
+
+  .fixed-item label {
+    font-size: 0.88rem;
+    color: var(--text-mid);
+    cursor: pointer;
+  }
+
+  .fixed-item.disabled label { color: var(--text-light); text-decoration: line-through; }
+
+  .fixed-item input[type="number"] {
+    width: 72px;
+    text-align: right;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 4px 8px;
+    font-size: 0.85rem;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-dark);
+    background: var(--cream);
+    transition: border-color 0.15s;
+  }
+  .fixed-item input[type="number"]:focus { outline: none; border-color: var(--accent); }
+  .fixed-item.disabled input[type="number"] { opacity: 0.4; pointer-events: none; }
+
+  .subtotal-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 2px solid var(--border-strong);
+  }
+  .subtotal-row span { font-size: 0.8rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.06em; }
+  .subtotal-row strong { font-size: 1rem; color: var(--text-dark); }
+
+  /* CHECKBOX CUSTOM */
+  .chk {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border-strong);
+    border-radius: 5px;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    background: white;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .chk:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .chk:checked::after {
+    content: '';
+    position: absolute;
+    left: 3px; top: 0px;
+    width: 5px; height: 9px;
+    border: 2px solid white;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+  }
+
+  /* MATERIALES VARIABLES */
+  .materials-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.84rem;
+  }
+
+  .materials-table thead th {
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-light);
+    padding: 0 6px 8px;
+    border-bottom: 1px solid var(--border-strong);
+  }
+
+  .materials-table thead th:last-child { text-align: right; }
+
+  .materials-table tbody tr td {
+    padding: 7px 6px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  .materials-table tbody tr:last-child td { border-bottom: none; }
+
+  .mat-select {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 5px 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    color: var(--text-dark);
+    background: var(--cream);
+  }
+
+  .mat-input {
+    width: 70px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 5px 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    text-align: right;
+    color: var(--text-dark);
+    background: var(--cream);
+  }
+
+  .mat-select:focus, .mat-input:focus { outline: none; border-color: var(--accent); }
+
+  .mat-subtotal {
+    text-align: right;
+    font-weight: 500;
+    color: var(--text-dark);
+    min-width: 60px;
+  }
+
+  .btn-delete {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--danger);
+    font-size: 1rem;
+    padding: 4px;
+    border-radius: 5px;
+    opacity: 0.6;
+    transition: opacity 0.15s;
+    line-height: 1;
+  }
+  .btn-delete:hover { opacity: 1; }
+
+  .btn-add {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 1rem;
+    padding: 8px 14px;
+    background: none;
+    border: 1.5px dashed var(--border-strong);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--brown-light);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.83rem;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+    width: 100%;
+    justify-content: center;
+  }
+  .btn-add:hover { background: var(--accent-light); color: var(--warm-brown); border-color: var(--accent); }
+
+  /* PRECIOS UNITARIOS */
+  .prices-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .price-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    background: var(--cream);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+  }
+
+  .price-item label {
+    font-size: 0.72rem;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .price-item-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .price-item-row span {
+    font-size: 0.75rem;
+    color: var(--text-light);
+  }
+
+  .price-input {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 4px 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    color: var(--text-dark);
+    background: white;
+    min-width: 0;
+  }
+  .price-input:focus { outline: none; border-color: var(--accent); }
+
+  /* RESULTADO */
+  .result-panel {
+    background: var(--text-dark);
+    color: var(--accent-light);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    height: fit-content;
+    position: sticky;
+    top: 1.5rem;
+  }
+
+  .result-panel h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    color: var(--accent-light);
+    border-bottom: 1px solid rgba(200, 135, 58, 0.25);
+    padding-bottom: 0.75rem;
+  }
+
+  .result-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+  }
+
+  .result-line span:first-child { color: rgba(240, 213, 176, 0.7); }
+  .result-line span:last-child { font-weight: 500; color: var(--accent-light); }
+
+  .result-total {
+    border-top: 1px solid rgba(200, 135, 58, 0.35);
+    padding-top: 1rem;
+  }
+
+  .result-total .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(240, 213, 176, 0.5); margin-bottom: 4px; }
+  .result-total .amount {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.6rem;
+    color: #FFD89A;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .profit-control {
+    background: rgba(200, 135, 58, 0.12);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+  }
+
+  .profit-control .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .profit-control label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: rgba(240, 213, 176, 0.6);
+  }
+
+  .profit-control .pct {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--accent-light);
+  }
+
+  .profit-control input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+  }
+
+  .breakdown {
+    font-size: 0.78rem;
+    color: rgba(240, 213, 176, 0.5);
+    line-height: 1.8;
+  }
+
+  .breakdown strong { color: rgba(240, 213, 176, 0.85); font-weight: 500; }
+
+  /* UNIT tag */
+  .unit-tag {
+    font-size: 0.68rem;
+    background: var(--accent-light);
+    color: var(--warm-brown);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .section-hint {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+    font-style: italic;
+  }
+
+  @media (max-width: 700px) {
+    .layout { grid-template-columns: 1fr; }
+    .left-col, .right-col, .bottom-left { grid-column: 1; grid-row: auto; margin: 0 0 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="flame-icon">🕯️</div>
+  <div>
+    <h1>Presupuesto de Velas</h1>
+    <p>Calcula el precio de venta considerando materiales, costos fijos y ganancia</p>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- COSTOS FIJOS -->
+  <div class="panel left-col">
+    <div class="panel-title"><span class="icon">📋</span> Costos fijos y empaque</div>
+    <p class="section-hint">Activa o desactiva cada artículo según lo uses en esta vela.</p>
+    <div id="fixed-list"></div>
+    <div class="subtotal-row">
+      <span>Subtotal costos fijos</span>
+      <strong id="fixed-subtotal">$0.00</strong>
+    </div>
+  </div>
+
+  <!-- RESULTADO (columna derecha, sticky) -->
+  <div class="result-panel right-col">
+    <h2>💰 Precio de venta</h2>
+
+    <div class="profit-control">
+      <div class="header">
+        <label>Porcentaje de ganancia</label>
+        <span class="pct" id="profit-pct-label">60%</span>
+      </div>
+      <input type="range" id="profit-slider" min="0" max="200" step="1" value="60">
+    </div>
+
+    <div class="result-line">
+      <span>Materiales variables</span>
+      <span id="r-materials">$0.00</span>
+    </div>
+    <div class="result-line">
+      <span>Costos fijos activos</span>
+      <span id="r-fixed">$0.00</span>
+    </div>
+    <div class="result-line">
+      <span>Costo base total</span>
+      <span id="r-base">$0.00</span>
+    </div>
+    <div class="result-line">
+      <span>Ganancia aplicada</span>
+      <span id="r-profit">$0.00</span>
+    </div>
+
+    <div class="result-total">
+      <div class="label">Precio sugerido de venta</div>
+      <div class="amount" id="r-total">$0.00</div>
+    </div>
+
+    <div class="breakdown" id="r-breakdown"></div>
+  </div>
+
+  <!-- MATERIALES VARIABLES -->
+  <div class="panel bottom-left">
+    <div class="panel-title"><span class="icon">🧪</span> Materiales variables</div>
+    <p class="section-hint">Agrega los materiales que lleva esta vela. Puedes combinar tipos de cera, esencias o insumos personalizados.</p>
+
+    <table class="materials-table">
+      <thead>
+        <tr>
+          <th>Material</th>
+          <th>Cant.</th>
+          <th>P. unitario</th>
+          <th style="text-align:right">Subtotal</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="mat-body"></tbody>
+    </table>
+
+    <button class="btn-add" onclick="addMaterial()">＋ Agregar material</button>
+
+    <div class="subtotal-row" style="margin-top: 1.25rem;">
+      <span>Subtotal materiales</span>
+      <strong id="mat-subtotal">$0.00</strong>
+    </div>
+
+    <!-- Precios por unidad (configuración) -->
+    <div style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.25rem;">
+      <div class="panel-title" style="font-size:0.95rem; margin-bottom:0.75rem;"><span class="icon">⚙️</span> Precios de referencia</div>
+      <p class="section-hint" style="margin-bottom:0.75rem">Actualiza aquí los precios al comprar nuevos insumos.</p>
+      <div class="prices-grid" id="prices-grid"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const unitPrices = {
+  'cera_alto': { label: 'Cera alto punto', unit: 'g', price: 0.13 },
+  'cera_bajo': { label: 'Cera bajo punto', unit: 'g', price: 0.13 },
+  'cera_gel':  { label: 'Cera de gel',     unit: 'g', price: 0.15 },
+  'esencia':   { label: 'Esencia / aroma', unit: 'ml', price: 2.083 },
+  'custom':    { label: 'Otro insumo',     unit: 'u',  price: 0 },
+};
+
+const fixedItems = [
+  { id: 'pabilo',   label: 'Pabilo',                   price: 1,  active: true },
+  { id: 'vaso',     label: 'Vaso',                     price: 23, active: true },
+  { id: 'bolsa',    label: 'Bolsa',                    price: 7,  active: false },
+  { id: 'luz',      label: 'Luz (electricidad)',       price: 12, active: true },
+  { id: 'etq_hm',   label: 'Etiqueta Handmade w/ Love',price: 1,  active: true },
+  { id: 'etq_ty',   label: 'Etiqueta Thank You',       price: 1,  active: false },
+  { id: 'etq_aroma',label: 'Etiqueta nombre de aroma', price: 1,  active: true },
+  { id: 'colorante',label: 'Colorante',                price: 13, active: true },
+  { id: 'caja',     label: 'Caja',                     price: 0,  active: false },
+  { id: 'cubo',     label: 'Cubo transparente',        price: 3,  active: false },
+  { id: 'caja_gde', label: 'Caja grande',              price: 0,  active: false },
+  { id: 'bolsa2',   label: 'Bolsa grande',             price: 23, active: false },
+];
+
+let matCounter = 0;
+const materials = [];
+
+function fmt(n) { return '$' + n.toFixed(2); }
+
+function renderFixed() {
+  const list = document.getElementById('fixed-list');
+  list.innerHTML = '';
+  fixedItems.forEach((item, i) => {
+    const row = document.createElement('div');
+    row.className = 'fixed-item' + (item.active ? '' : ' disabled');
+    row.id = 'frow-' + i;
+    row.innerHTML = `
+      <input class="chk" type="checkbox" id="fchk-${i}" ${item.active ? 'checked' : ''} onchange="toggleFixed(${i})">
+      <label for="fchk-${i}">${item.label}</label>
+      <input type="number" min="0" step="0.01" value="${item.price}" onchange="updateFixed(${i}, this.value)" id="fprice-${i}">
+      <span class="unit-tag">MXN</span>
+    `;
+    list.appendChild(row);
+  });
+  calcAll();
+}
+
+function toggleFixed(i) {
+  fixedItems[i].active = document.getElementById('fchk-' + i).checked;
+  document.getElementById('frow-' + i).className = 'fixed-item' + (fixedItems[i].active ? '' : ' disabled');
+  calcAll();
+}
+
+function updateFixed(i, val) {
+  fixedItems[i].price = parseFloat(val) || 0;
+  calcAll();
+}
+
+function renderPrices() {
+  const grid = document.getElementById('prices-grid');
+  grid.innerHTML = '';
+  Object.entries(unitPrices).filter(([k]) => k !== 'custom').forEach(([key, p]) => {
+    const el = document.createElement('div');
+    el.className = 'price-item';
+    el.innerHTML = `
+      <label>${p.label}</label>
+      <div class="price-item-row">
+        <input class="price-input" type="number" min="0" step="0.001" value="${p.price}" onchange="updateUnitPrice('${key}', this.value)">
+        <span>/ ${p.unit}</span>
+      </div>
+    `;
+    grid.appendChild(el);
+  });
+}
+
+function updateUnitPrice(key, val) {
+  unitPrices[key].price = parseFloat(val) || 0;
+  materials.forEach(m => {
+    if (m.type === key) {
+      m.unitPrice = unitPrices[key].price;
+      const up = document.getElementById('mup-' + m.id);
+      if (up) up.value = m.unitPrice.toFixed(4);
+    }
+  });
+  calcAll();
+}
+
+function addMaterial(type = 'cera_gel', qty = 22) {
+  matCounter++;
+  const id = matCounter;
+  const p = unitPrices[type];
+  const mat = { id, type, qty, unitPrice: p.price };
+  materials.push(mat);
+  const tbody = document.getElementById('mat-body');
+  const tr = document.createElement('tr');
+  tr.id = 'mrow-' + id;
+  tr.innerHTML = buildMatRow(id, type, qty, p.price);
+  tbody.appendChild(tr);
+  calcAll();
+}
+
+function buildMatRow(id, type, qty, unitPrice) {
+  const opts = Object.entries(unitPrices).map(([k, p]) =>
+    `<option value="${k}" ${k === type ? 'selected' : ''}>${p.label}</option>`
+  ).join('');
+  const sub = (qty * unitPrice).toFixed(2);
+  const uType = unitPrices[type];
+  return `
+    <td><select class="mat-select" onchange="matTypeChange(${id}, this.value)">${opts}</select></td>
+    <td><input class="mat-input" id="mqty-${id}" type="number" min="0" step="0.1" value="${qty}" onchange="matChange(${id})"> <small style="color:var(--text-light);font-size:0.7rem" id="munit-${id}">${uType ? uType.unit : ''}</small></td>
+    <td><input class="mat-input" id="mup-${id}" type="number" min="0" step="0.001" value="${unitPrice}" onchange="matUpChange(${id}, this.value)" style="width:80px"></td>
+    <td class="mat-subtotal" id="msub-${id}">$${sub}</td>
+    <td><button class="btn-delete" onclick="deleteMat(${id})" title="Eliminar">✕</button></td>
+  `;
+}
+
+function matTypeChange(id, type) {
+  const mat = materials.find(m => m.id === id);
+  if (!mat) return;
+  mat.type = type;
+  mat.unitPrice = unitPrices[type]?.price || 0;
+  const up = document.getElementById('mup-' + id);
+  const un = document.getElementById('munit-' + id);
+  if (up) up.value = mat.unitPrice.toFixed(4);
+  if (un) un.textContent = unitPrices[type]?.unit || '';
+  matChange(id);
+}
+
+function matChange(id) {
+  const mat = materials.find(m => m.id === id);
+  if (!mat) return;
+  mat.qty = parseFloat(document.getElementById('mqty-' + id)?.value) || 0;
+  const sub = mat.qty * mat.unitPrice;
+  const el = document.getElementById('msub-' + id);
+  if (el) el.textContent = '$' + sub.toFixed(2);
+  calcAll();
+}
+
+function matUpChange(id, val) {
+  const mat = materials.find(m => m.id === id);
+  if (!mat) return;
+  mat.unitPrice = parseFloat(val) || 0;
+  matChange(id);
+}
+
+function deleteMat(id) {
+  const idx = materials.findIndex(m => m.id === id);
+  if (idx !== -1) materials.splice(idx, 1);
+  const row = document.getElementById('mrow-' + id);
+  if (row) row.remove();
+  calcAll();
+}
+
+function calcAll() {
+  const fixedTotal = fixedItems.filter(f => f.active).reduce((s, f) => s + (parseFloat(f.price) || 0), 0);
+  const matTotal = materials.reduce((s, m) => s + m.qty * m.unitPrice, 0);
+  const base = fixedTotal + matTotal;
+  const pct = parseInt(document.getElementById('profit-slider').value) / 100;
+  const profit = base * pct;
+  const total = base + profit;
+
+  document.getElementById('fixed-subtotal').textContent = fmt(fixedTotal);
+  document.getElementById('mat-subtotal').textContent = fmt(matTotal);
+  document.getElementById('r-materials').textContent = fmt(matTotal);
+  document.getElementById('r-fixed').textContent = fmt(fixedTotal);
+  document.getElementById('r-base').textContent = fmt(base);
+  document.getElementById('r-profit').textContent = fmt(profit);
+  document.getElementById('r-total').textContent = fmt(total);
+
+  const lines = [];
+  fixedItems.filter(f => f.active).forEach(f => {
+    lines.push(`<strong>${f.label}</strong> — $${(f.price||0).toFixed(2)}`);
+  });
+  materials.forEach(m => {
+    const label = unitPrices[m.type]?.label || 'Material';
+    lines.push(`<strong>${label}</strong> ${m.qty} ${unitPrices[m.type]?.unit||''} × $${m.unitPrice.toFixed(3)} — $${(m.qty*m.unitPrice).toFixed(2)}`);
+  });
+  document.getElementById('r-breakdown').innerHTML = lines.join('<br>');
+}
+
+document.getElementById('profit-slider').addEventListener('input', function() {
+  document.getElementById('profit-pct-label').textContent = this.value + '%';
+  calcAll();
+});
+
+renderFixed();
+renderPrices();
+addMaterial('cera_gel', 22);
+addMaterial('esencia', 1);
+</script>
+</body>
+</html>
