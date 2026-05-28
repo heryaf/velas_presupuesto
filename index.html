@@ -419,10 +419,24 @@
     font-style: italic;
   }
 
-  @media (max-width: 700px) {
-    .layout { grid-template-columns: 1fr; }
-    .left-col, .right-col, .bottom-left { grid-column: 1; grid-row: auto; margin: 0 0 1rem; }
-  }
+  @media (max-width: 1000px) {
+  .layout { grid-template-columns: 1fr; }
+  .left-col, .right-col, .bottom-left { grid-column: 1; grid-row: auto; margin: 0 0 1rem; }
+  .result-panel { position: static; }
+}
+
+@media (max-width: 600px) {
+  header { padding: 1.25rem 1rem; }
+  header h1 { font-size: 1.4rem; }
+  .layout { padding: 1rem; }
+  .prices-grid { grid-template-columns: 1fr; }
+  .mat-input { width: 55px; }
+}
+
+@media (max-width: 400px) {
+  .materials-table thead { display: none; }
+  .materials-table td { display: block; width: 100%; }
+}
 </style>
 </head>
 <body>
